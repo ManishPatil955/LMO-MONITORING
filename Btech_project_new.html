@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LMO Monitoring System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f9f9f9;
+        }
+        .status {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .green {
+            color: green;
+        }
+        .red {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h1>LMO Monitoring Dashboard</h1>
+
+<p><strong>Remaining Units:</strong> <span id="remainingUnits">100</span></p>
+
+<div class="status" id="statusColor">Stock Level: Good</div>
+
+<input type="number" id="UnitsUsed" placeholder="Units Used" style="margin-right:10px;">
+<input type="number" id="UnitsReceived" placeholder="Units Received">
+<button onclick="updateData()">Update Data</button>
+
+<script>
+    let remainingUnits = 100;
+
+    function updateColor(value) {
+        let status = document.getElementById('statusColor');
+        if (value < 25) {
+            status.innerText = "Urgent: Low Stock!";
+            status.className = "status red";
+            alert("Emergency: Stock critically low! Please arrange immediate delivery.");
+        } else {
+            status.innerText = "Stock Level: Good";
+            status.className = "status green";
+        }
+    }
+
+    async function updateData() {
+        let used = parseInt(document.getElementById('UnitsUsed').value);
+        let received = parseInt(document.getElementById('UnitsReceived').value);
+
+        if (isNaN(used)) used = 0;
+        if (isNaN(received)) received = 0;
+
+        remainingUnits = remainingUnits - used + received;
+        if (remainingUnits < 0) remainingUnits = 0;
+
+        document.getElementById('remainingUnits').innerText = remainingUnits;
+        updateColor(remainingUnits);
+
+        // Clear the inputs after updating
+        document.getElementById('UnitsUsed').value = "";
+        document.getElementById('UnitsReceived').value = "";
+
+        // Replace the URL with your latest web app URL
+        const response = await fetch('https://script.google.com/macros/s/AKfycbxu5c9vWNMmcp17kmA4QfRKlbaU2ytVHuq8DnzmJalxB0P2IZkuuDcbk8JR4to3_1KEeQ/exec', {
+            method: 'POST',
+            body: JSON.stringify({
+                unitsUsed: used,
+                unitsReceived: received,
+                remainingUnits: remainingUnits
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if(response.ok) {
+            alert("Data successfully saved to database!");
+        } else {
+            alert("Error saving data!");
+        }
+    }
+</script>
+
+</body>
+</html>
